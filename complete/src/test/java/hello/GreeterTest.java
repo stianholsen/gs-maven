@@ -7,11 +7,11 @@ import org.junit.Test;
 
 public class GreeterTest {
 	
-	private Greeter greeter = new Greeter();
+	private StartAuth greeter = new StartAuth();
 
 	@Test
 	public void greeterSaysHello() {
-		assertThat(greeter.sayHello(), containsString("Hello"));
+		assertThat(greeter.startProcess("hei"), containsString("hoho"));
 	}
 
 }
