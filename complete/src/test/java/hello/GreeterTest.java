@@ -11,7 +11,7 @@ public class GreeterTest {
 
 	@Test
 	public void greeterSaysHello() {
-		assertThat(greeter.startProcess("hei"), containsString("hoho"));
+		assertThat(greeter.generateAccessToken(), containsString("hoho"));
 	}
 
 }

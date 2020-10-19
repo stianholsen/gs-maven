@@ -8,9 +8,19 @@
 	<packaging>jar</packaging>
 	<version>0.1.0</version>
 
+	<parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.0.RELEASE</version>
+    </parent>
+
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<api-docs.json.filename>src/main/java/api</api-docs.json.filename>
+		<version.openapi.codegen>3.3.3</version.openapi.codegen>
+		<generated-sources-path>${project.build.directory}/generated-sources</generated-sources-path>
+        <generated-sources-java-path>main/java</generated-sources-java-path>
 	</properties>
 
 	<dependencies>
@@ -29,30 +39,142 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- end::junit[] -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20180130</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.11.3</version>
+		</dependency>
+        <dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-parameter-names</artifactId>
+			<version>2.4.1</version>
+		</dependency>
+        <dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.11.3</version>
+		</dependency>
+		<dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+		  <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>hello.Main</mainClass>
-								</transformer>
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                        <transformers>
+                            <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <resource>META-INF/spring.handlers</resource>
+                            </transformer>
+                            <transformer
+                                implementation="org.springframework.boot.maven.PropertiesMergingResourceTransformer">
+                                <resource>META-INF/spring.factories</resource>
+                            </transformer>
+                            <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <resource>META-INF/spring.schemas</resource>
+                            </transformer>
+                            <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                            <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <mainClass>hello.Main</mainClass>
+                            </transformer>
+                        </transformers>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+
+			<plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${version.openapi.codegen}</version>
+                <configuration>
+                    <configOptions>
+                        <sourceFolder>${generated-sources-java-path}</sourceFolder>
+                    </configOptions>
+                    <output>${generated-sources-path}/generated/swagger</output>
+                    <library>resttemplate</library>
+                    <generatorName>java</generatorName>
+                    <generateApiTests>false</generateApiTests>
+                    <configHelp/>
+                </configuration>
+                <executions>
+                 <execution>
+                        <id>swagger-auth-v4.json</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${api-docs.json.filename}/auth-v4.json</inputSpec>
+                            <modelPackage>${project.groupId}.v4.auth.model</modelPackage>
+                            <apiPackage>${project.groupId}.v4.auth.api</apiPackage>
+                            <invokerPackage>${project.groupId}.v4.auth.invoker</invokerPackage>
+                            <configOptions>
+                                <dateLibrary>java8-localdatetime</dateLibrary>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 
